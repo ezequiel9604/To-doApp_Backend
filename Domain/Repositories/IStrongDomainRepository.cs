@@ -8,13 +8,13 @@ public interface IStrongDomainRepository<T>
 
     Task<T> GetByIdAsync(int id);
 
-    Task<T> SaveChangesAsync();
+    void SaveChangesAsync();
 
     void CreateAsync(T obj);
 
-    void DeleteAsync(T obj);
+    void Delete(T obj);
 
-    void UpdateAsync(T obj);
+    void Update(T obj);
 
 }
 
