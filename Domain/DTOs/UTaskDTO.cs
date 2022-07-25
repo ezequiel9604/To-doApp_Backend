@@ -2,7 +2,7 @@
 
 namespace Domain.DTOs;
 
-public class TaskDTO
+public class UTaskDTO
 {
 
     public int Id { get; set; }
