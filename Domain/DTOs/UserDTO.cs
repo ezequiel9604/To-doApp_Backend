@@ -11,4 +11,8 @@ public class UserDTO
 
     public string? Password { get; set; }
 
+    public List<UTaskDTO>? UTasks { get; set; }
+
+    public List<ChangeOfPasswordDTO>? ChangeOfPasswords { get; set; }
+
 }

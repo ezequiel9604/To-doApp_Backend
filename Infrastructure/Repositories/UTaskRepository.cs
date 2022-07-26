@@ -1,4 +1,6 @@
 ﻿
+using AutoMapper;
+using Domain.DTOs;
 using Domain.Entities;
 using Domain.Repositories;
 using Infrastructure.Persistence;
@@ -8,82 +10,165 @@ namespace Infrastructure.Repositories;
 
 public class UTaskRepository : IUTaskRepository
 {
+    private readonly IMapper _mapper;
     private readonly TodoAppDbContext _dbContext;
 
-    public UTaskRepository(TodoAppDbContext dbContext)
+    public UTaskRepository(IMapper mapper, TodoAppDbContext dbContext)
     {
+        _mapper = mapper;
         _dbContext = dbContext;
     }
 
-    public async Task<List<UTask>> GetAllAsync()
+    public async Task<List<UTaskDTO>> GetAllAsync()
     {
         try
         {
             var tasks = await _dbContext.Tasks.ToListAsync();
 
-            return tasks;
+            var taskDtos = _mapper.Map<List<UTaskDTO>>(tasks);
+
+            return taskDtos;
         }
         catch (Exception)
         {
-            throw;
+            return new List<UTaskDTO>();
         }
     }
 
-    public async Task<UTask> GetByIdAsync(int id)
+    public async Task<UTaskDTO> GetByIdAsync(int id)
     {
         try
         {
             var task = await _dbContext.Tasks.Where(x => x.Id == id).FirstOrDefaultAsync();
 
-            return task;
+            var taskDto = _mapper.Map<UTaskDTO>(task);
+
+            return taskDto;
         }
         catch (Exception)
         {
-            throw;
+            return new UTaskDTO();
         }
     }
 
-    public async void CreateAsync(UTask task)
+    public async Task<string> CreateAsync(UTaskDTO taskDto)
     {
+        if(string.IsNullOrEmpty(taskDto.Description) || string.IsNullOrEmpty(taskDto.Category) ||
+            string.IsNullOrEmpty(taskDto.Frequency) || taskDto.Hour < 0 || taskDto.Minute < 0)
+        {
+            return "No empty values allow!";
+        }
+
         try
         {
+            var task = _mapper.Map<UTask>(taskDto);
+            task.Hour = new TimeOnly(taskDto.Hour, taskDto.Minute);
+
+            var frequency = await _dbContext.Frequencies.Where(x => x.Name == taskDto.Frequency).FirstOrDefaultAsync();
+            var category = await _dbContext.Categories.Where(x => x.Name == taskDto.Category).FirstOrDefaultAsync();
+            var user = await _dbContext.Users.Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
+
+            if (frequency != null)
+                task.FrequencyId = frequency.Id;
+
+            if (category != null)
+                task.CategoryId = category.Id;
+
+            if (user != null)
+                task.UserId = user.Id;
+
+
             await _dbContext.Tasks.AddAsync(task);
+
+            int affectedRows = await SaveChangesAsync();
+
+            if (affectedRows > 0)
+                return "Success!";
+
+            return "No action!";
+
         }
         catch (Exception)
         {
-            throw;
+            return "Database error!";
         }
     }
 
-    public void Delete(UTask task)
+    public async Task<string> DeleteAsync(UTaskDTO taskDto)
     {
         try
         {
+            var task = await _dbContext.Tasks.Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
+
+            if (task == null)
+                return "No Exists";
+
             _dbContext.Tasks.Remove(task);
+
+            int affectedRows = await SaveChangesAsync();
+
+            if (affectedRows > 0)
+                return "Success!";
+
+            return "No action!";
         }
         catch (Exception)
         {
-            throw;
+            return "Database error!";
         }
     }
 
-    public void Update(UTask task)
+    public async Task<string> UpdateAsync(UTaskDTO taskDto)
     {
         try
         {
+            var task = await _dbContext.Tasks.Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
+
+            if (task == null)
+                return "No Exists";
+
+            if(!string.IsNullOrEmpty(taskDto.Description))
+                task.Description = taskDto.Description;
+
+            if (!string.IsNullOrEmpty(taskDto.Frequency))
+            {
+                var frequency = await _dbContext.Frequencies.Where(x => x.Name == taskDto.Frequency).FirstOrDefaultAsync();
+                if (frequency != null)
+                    task.FrequencyId = frequency.Id;
+            }
+
+            if (!string.IsNullOrEmpty(taskDto.Category))
+            {
+                var category = await _dbContext.Categories.Where(x => x.Name == taskDto.Category).FirstOrDefaultAsync();
+                if (category != null)
+                    task.CategoryId = category.Id;
+            }
+
+            if (taskDto.Hour > 0 && taskDto.Minute > 0)
+                task.Hour = new TimeOnly(taskDto.Hour, taskDto.Minute);
+
+
             _dbContext.Tasks.Update(task);
+
+            int affectedRows = await SaveChangesAsync();
+
+            if (affectedRows > 0)
+                return "Success!";
+
+            return "No action!";
+
         }
         catch (Exception)
         {
-            throw;
+            return "Database error!";
         }
     }
 
-    public async void SaveChangesAsync()
+    public async Task<int> SaveChangesAsync()
     {
         try
         {
-            await _dbContext.SaveChangesAsync();
+            return await _dbContext.SaveChangesAsync();
         }
         catch (Exception)
         {

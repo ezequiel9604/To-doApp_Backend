@@ -5,15 +5,14 @@ namespace Infrastructure.Persistence;
 
 public class TodoAppDbContextSeed
 {
-
     public static IEnumerable<Category> SetPreconfigureCategory()
     {
         return new List<Category>()
         {
             new Category() { Name = "Family" },
             new Category() { Name = "Health" },
-            new Category(){ Name = "Home" },
-            new Category{ Name = "Work" }
+            new Category() { Name = "Home" },
+            new Category() { Name = "Work" }
         };
     }
 
@@ -23,7 +22,7 @@ public class TodoAppDbContextSeed
         {
             new Frequency() { Name = "Daily" },
             new Frequency() { Name = "Weekly" },
-            new Frequency(){ Name = "Monthly" }
+            new Frequency() { Name = "Monthly" }
         };
     }
 

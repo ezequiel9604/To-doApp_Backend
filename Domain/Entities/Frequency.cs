@@ -11,5 +11,9 @@ public class Frequency
     [Required]
     public string? Name { get; set; }
 
+    // Foreign key
+
+    public List<UTask>? UTasks { get; set; }
+
 }
 

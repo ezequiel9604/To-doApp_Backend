@@ -12,5 +12,16 @@ public class UTask
     public string? Description { get; set; }
 
     [Required]
-    public TimeOnly? TimeOfDay { get; set; }
+    public TimeOnly? Hour { get; set; }
+
+
+    public int UserId { get; set; }
+    public User? User { get; set; }
+
+    public int CategoryId { get; set; }
+    public Category? Category { get; set; }
+
+    public int FrequencyId { get; set; }
+    public Frequency? Frequency { get; set; }
+
 }

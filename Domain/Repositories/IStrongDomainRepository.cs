@@ -6,15 +6,15 @@ public interface IStrongDomainRepository<T>
 
     Task<List<T>> GetAllAsync();
 
-    Task<T> GetByIdAsync(int id);
+    Task<T> GetByIdAsync(int id); 
 
-    void SaveChangesAsync();
+    Task<string> CreateAsync(T obj);
 
-    void CreateAsync(T obj);
+    Task<string> DeleteAsync(T obj);
 
-    void Delete(T obj);
+    Task<string> UpdateAsync(T obj);
 
-    void Update(T obj);
+    Task<int> SaveChangesAsync();
 
 }
 

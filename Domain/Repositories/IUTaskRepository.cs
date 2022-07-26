@@ -1,9 +1,9 @@
 ﻿
-using Domain.Entities;
+using Domain.DTOs;
 
 namespace Domain.Repositories;
 
-public interface IUTaskRepository : IStrongDomainRepository<UTask>
+public interface IUTaskRepository : IStrongDomainRepository<UTaskDTO>
 {
 
 }

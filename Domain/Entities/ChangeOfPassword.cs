@@ -11,8 +11,8 @@ public class ChangeOfPassword
     [Required]
     public DateTime? ChangedDate { get; set; }
 
-    [Required]
-    public int Counter { get; set; }
+    public int UserId { get; set; }
+    public User? User { get; set; }
 
 }
 

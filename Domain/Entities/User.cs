@@ -20,5 +20,12 @@ public class User
     [Required]
     public byte[]? PasswordSalt { get; set; }
 
+
+    // Foreign keys
+
+    public List<UTask>? UTasks { get; set; }
+
+    public List<ChangeOfPassword>? ChangeOfPasswords { get; set; }
+
 }
 
