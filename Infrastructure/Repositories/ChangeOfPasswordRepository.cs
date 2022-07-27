@@ -1,4 +1,6 @@
 ﻿
+using AutoMapper;
+using Domain.DTOs;
 using Domain.Entities;
 using Domain.Repositories;
 using Infrastructure.Persistence;
@@ -9,82 +11,68 @@ namespace Infrastructure.Repositories;
 public class ChangeOfPasswordRepository : IChangeOfPasswordRepository
 {
 
+    private readonly IMapper _mapper;
     private readonly TodoAppDbContext _dbContext;
 
-    public ChangeOfPasswordRepository(TodoAppDbContext dbContext)
+    public ChangeOfPasswordRepository(IMapper mapper, TodoAppDbContext dbContext)
     {
+        _mapper = mapper;
         _dbContext = dbContext;
     }
 
-    public async Task<List<ChangeOfPassword>> GetAllAsync()
+    public async Task<List<ChangeOfPasswordDTO>> GetAllAsync()
     {
         try
         {
             var changes = await _dbContext.ChangeOfPasswords.ToListAsync();
 
-            return changes;
+            var changeDtos = _mapper.Map<List<ChangeOfPasswordDTO>>(changes);
+
+            return changeDtos;
         }
         catch (Exception)
         {
-            throw;
+            return new List<ChangeOfPasswordDTO>();
         }
     }
 
-    public async Task<ChangeOfPassword> GetByIdAsync(int id)
+    public async Task<ChangeOfPasswordDTO> GetByIdAsync(int id)
     {
         try
         {
             var change = await _dbContext.ChangeOfPasswords.Where(x => x.Id == id).FirstOrDefaultAsync();
 
-            return change;
+            var changeDto = _mapper.Map<ChangeOfPasswordDTO>(change);
+
+            return changeDto;
         }
         catch (Exception)
         {
-            throw;
+            return new ChangeOfPasswordDTO();
         }
     }
 
-    public async void CreateAsync(ChangeOfPassword change)
+    public async Task<string> CreateAsync(ChangeOfPasswordDTO changeDto)
     {
-        try
-        {
-            await _dbContext.ChangeOfPasswords.AddAsync(change);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+
+        throw new NotImplementedException();
     }
 
-    public void Delete(ChangeOfPassword change)
+    public async Task<string> DeleteAsync(ChangeOfPasswordDTO change)
     {
-        try
-        {
-            _dbContext.ChangeOfPasswords.Remove(change);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        throw new NotImplementedException();
     }
 
-    public void Update(ChangeOfPassword change)
+    public async Task<string> UpdateAsync(ChangeOfPasswordDTO change)
     {
-        try
-        {
-            _dbContext.ChangeOfPasswords.Update(change);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        throw new NotImplementedException();
     }
 
-    public async void SaveChangesAsync()
+    public async Task<int> SaveChangesAsync()
     {
         try
         {
-            await _dbContext.SaveChangesAsync();
+            return await _dbContext.SaveChangesAsync();
         }
         catch (Exception)
         {

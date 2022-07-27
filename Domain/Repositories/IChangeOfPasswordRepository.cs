@@ -1,9 +1,9 @@
 ﻿
-using Domain.Entities;
+using Domain.DTOs;
 
 namespace Domain.Repositories;
 
-public interface IChangeOfPasswordRepository : IStrongDomainRepository<ChangeOfPassword>
+public interface IChangeOfPasswordRepository : IStrongDomainRepository<ChangeOfPasswordDTO>
 {
 
 }

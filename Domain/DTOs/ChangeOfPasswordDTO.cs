@@ -7,7 +7,8 @@ public class ChangeOfPasswordDTO
 
     public int Id { get; set; }
 
-    public DateTime? ChangedDate { get; set; }
+    public string? ChangedDate { get; set; }
 
+    public int UserId { get; set; }
 
 }

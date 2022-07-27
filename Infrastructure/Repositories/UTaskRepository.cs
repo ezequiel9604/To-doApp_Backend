@@ -62,21 +62,17 @@ public class UTaskRepository : IUTaskRepository
         try
         {
             var task = _mapper.Map<UTask>(taskDto);
-            task.Hour = new TimeOnly(taskDto.Hour, taskDto.Minute);
-
+            
+            // task.Hour = new TimeOnly(taskDto.Hour, taskDto.Minute);
             var frequency = await _dbContext.Frequencies.Where(x => x.Name == taskDto.Frequency).FirstOrDefaultAsync();
             var category = await _dbContext.Categories.Where(x => x.Name == taskDto.Category).FirstOrDefaultAsync();
-            var user = await _dbContext.Users.Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
 
             if (frequency != null)
                 task.FrequencyId = frequency.Id;
 
             if (category != null)
                 task.CategoryId = category.Id;
-
-            if (user != null)
-                task.UserId = user.Id;
-
+            
 
             await _dbContext.Tasks.AddAsync(task);
 
@@ -98,7 +94,7 @@ public class UTaskRepository : IUTaskRepository
     {
         try
         {
-            var task = await _dbContext.Tasks.Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
+            var task = await _dbContext.Tasks.Where(x => x.Id == id).FirstOrDefaultAsync();
 
             if (task == null)
                 return "No Exists";

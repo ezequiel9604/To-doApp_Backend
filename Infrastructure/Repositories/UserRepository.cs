@@ -137,8 +137,10 @@ public class UserRepository : IUserRepository
 
             if (!string.IsNullOrEmpty(userDto.Name))
                 user.Name = userDto.Name;
+
             if(!string.IsNullOrEmpty(userDto.Email))
                 user.Email = userDto.Email;
+
             if(!string.IsNullOrEmpty(userDto.Password))
             {
                 Password.CreatePassword(userDto.Password, out byte[] hash, out byte[] salt);
