@@ -54,7 +54,8 @@ public class UTaskRepository : IUTaskRepository
     public async Task<string> CreateAsync(UTaskDTO taskDto)
     {
         if(string.IsNullOrEmpty(taskDto.Description) || string.IsNullOrEmpty(taskDto.Category) ||
-            string.IsNullOrEmpty(taskDto.Frequency) || taskDto.Hour < 0 || taskDto.Minute < 0)
+            string.IsNullOrEmpty(taskDto.Frequency) || taskDto.Hour < 0 || taskDto.Minute < 0 ||
+            taskDto.Day < 0 || taskDto.Month < 0 || taskDto.Year < 0)
         {
             return "No empty values allow!";
         }
@@ -63,9 +64,10 @@ public class UTaskRepository : IUTaskRepository
         {
             var task = _mapper.Map<UTask>(taskDto);
             
-            // task.Hour = new TimeOnly(taskDto.Hour, taskDto.Minute);
-            var frequency = await _dbContext.Frequencies.Where(x => x.Name == taskDto.Frequency).FirstOrDefaultAsync();
-            var category = await _dbContext.Categories.Where(x => x.Name == taskDto.Category).FirstOrDefaultAsync();
+            var frequency = await _dbContext.Frequencies
+                .Where(x => x.Name == taskDto.Frequency).FirstOrDefaultAsync();
+            var category = await _dbContext.Categories
+                .Where(x => x.Name == taskDto.Category).FirstOrDefaultAsync();
 
             if (frequency != null)
                 task.FrequencyId = frequency.Id;
@@ -94,10 +96,11 @@ public class UTaskRepository : IUTaskRepository
     {
         try
         {
-            var task = await _dbContext.Tasks.Where(x => x.Id == id).FirstOrDefaultAsync();
+            var task = await _dbContext.Tasks
+                .Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
 
             if (task == null)
-                return "No Exists";
+                return "No Exists!";
 
             _dbContext.Tasks.Remove(task);
 
@@ -118,31 +121,62 @@ public class UTaskRepository : IUTaskRepository
     {
         try
         {
-            var task = await _dbContext.Tasks.Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
+            var task = await _dbContext.Tasks
+                .Where(x => x.Id == taskDto.Id).FirstOrDefaultAsync();
 
             if (task == null)
-                return "No Exists";
+                return "No Exists!";
 
             if(!string.IsNullOrEmpty(taskDto.Description))
                 task.Description = taskDto.Description;
 
             if (!string.IsNullOrEmpty(taskDto.Frequency))
             {
-                var frequency = await _dbContext.Frequencies.Where(x => x.Name == taskDto.Frequency).FirstOrDefaultAsync();
+                var frequency = await _dbContext.Frequencies
+                    .Where(x => x.Name == taskDto.Frequency).FirstOrDefaultAsync();
                 if (frequency != null)
                     task.FrequencyId = frequency.Id;
             }
 
             if (!string.IsNullOrEmpty(taskDto.Category))
             {
-                var category = await _dbContext.Categories.Where(x => x.Name == taskDto.Category).FirstOrDefaultAsync();
+                var category = await _dbContext.Categories
+                    .Where(x => x.Name == taskDto.Category).FirstOrDefaultAsync();
                 if (category != null)
                     task.CategoryId = category.Id;
             }
 
+            // check daily
             if (taskDto.Hour > 0 && taskDto.Minute > 0)
-                task.Hour = new TimeOnly(taskDto.Hour, taskDto.Minute);
+            {
+                DateTime newDate;
 
+                // check weekly
+                if (taskDto.Hour > 0 && taskDto.Minute > 0 && taskDto.Day > 0)
+                {
+                    // check monthly
+                    if (taskDto.Hour > 0 && taskDto.Minute > 0 && taskDto.Day > 0
+                        && taskDto.Month > 0 && taskDto.Year > 0)
+                    {
+                        newDate = new DateTime(taskDto.Year, taskDto.Month, taskDto.Day,
+                            taskDto.Hour, taskDto.Minute, 0);
+
+                    }
+                    else
+                    {
+                        newDate = new DateTime(task.Date.Value.Year, task.Date.Value.Month,
+                            taskDto.Day, taskDto.Hour, taskDto.Minute, 0);
+                    }  
+
+                }
+                else
+                {
+                    newDate = new DateTime(task.Date.Value.Year, task.Date.Value.Month,
+                        task.Date.Value.Day, taskDto.Hour, taskDto.Minute, 0);
+                }
+
+                task.Date = newDate;
+            }
 
             _dbContext.Tasks.Update(task);
 

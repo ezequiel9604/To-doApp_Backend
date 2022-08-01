@@ -9,10 +9,10 @@ public class UTask
     public int Id { get; set; }
 
     [Required]
-    public string? Description { get; set; }
+    public DateTime? Date { get; set; }
 
     [Required]
-    public TimeOnly? Hour { get; set; }
+    public string? Description { get; set; }
 
 
     public int UserId { get; set; }

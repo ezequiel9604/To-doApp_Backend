@@ -1,3 +1,14 @@
+
+using AutoMapper;
+using Domain.Repositories;
+using Infrastructure.Persistence;
+using Infrastructure.Mapper;
+using Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +18,45 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+// setting up dbms
+builder.Services.AddDbContext<TodoAppDbContext>(opts => opts.UseSqlServer(
+    builder.Configuration.GetConnectionString("mainConnection")));
+
+
+// setting up authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opts => opts.TokenValidationParameters = new TokenValidationParameters
+    {
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+            builder.Configuration.GetSection("AppSettings:TokenKey").Value)),
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = false,
+        ValidateAudience = false
+    });
+
+
+// setting up repository scope
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUTaskRepository, UTaskRepository>();
+
+
+// setting up cors
+builder.Services.AddCors(c => c.AddPolicy("corsapp", builder =>
+{
+    builder.WithOrigins("*").AllowAnyHeader().AllowAnyMethod();
+}));
+
+
+// setting up automapper
+var mapperConfig = new MapperConfiguration(cfg =>
+{
+    cfg.AddProfile(new AutoMapperProfileConfiguration());
+});
+
+builder.Services.AddSingleton(mapperConfig.CreateMapper());
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -15,6 +65,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("corsapp");
 
 app.UseHttpsRedirection();
 

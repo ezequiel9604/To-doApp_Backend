@@ -6,17 +6,20 @@ using Domain.Repositories;
 using Infrastructure.Helpers;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 { 
     private readonly IMapper _mapper;
+    private readonly IConfiguration _config;
     private readonly TodoAppDbContext _dbContext;
 
-    public UserRepository(IMapper mapper, TodoAppDbContext dbContext)
+    public UserRepository(IMapper mapper, IConfiguration config, TodoAppDbContext dbContext)
     {
         _mapper = mapper;
+        _config = config;
         _dbContext = dbContext;
     }
 
@@ -132,9 +135,6 @@ public class UserRepository : IUserRepository
             if (user == null)
                 return "No Exists!";
 
-            if (!Password.VerifyPassword(userDto.Password, user.PasswordHash, user.PasswordSalt))
-                return "Access Denied!";
-
             if (!string.IsNullOrEmpty(userDto.Name))
                 user.Name = userDto.Name;
 
@@ -181,6 +181,79 @@ public class UserRepository : IUserRepository
         }
     }
 
+    public async Task<string> SignupAsync(UserDTO userDto)
+    {
+
+        if (string.IsNullOrEmpty(userDto.Name) || string.IsNullOrEmpty(userDto.Email) ||
+            string.IsNullOrEmpty(userDto.Password))
+        {
+            return "No empty values allow!";
+        }
+
+        try
+        {
+
+            if (await CheckUserExists(userDto.Email))
+                return "Already exists!";
+
+
+            Password.CreatePassword(userDto.Password, out byte[] hash, out byte[] salt);
+
+            var user = _mapper.Map<User>(userDto);
+            user.PasswordSalt = salt;
+            user.PasswordHash = hash;
+
+            await _dbContext.Users.AddAsync(user);
+
+            int affectedRows = await SaveChangesAsync();
+
+            if (affectedRows > 0)
+                return "Success!";
+
+            return "No action!";
+
+        }
+        catch (Exception)
+        {
+            return "Database error!";
+        }
+
+    }
+
+    public async Task<object> LoginAsync(string email, string password)
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            return "No empty allow!";
+
+        try
+        {
+            var user = await _dbContext.Users.Where(x => x.Email == email).FirstOrDefaultAsync();
+
+            if (user == null)
+                return "No exists!";
+
+            if (!Password.VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
+                return "No password!";
+
+            var token = Tokens.CreateToken(user, _config);
+
+            var userDto = _mapper.Map<UserDTO>(user);
+
+            return new { Token = token, User = userDto };
+
+        }
+        catch (Exception)
+        {
+            return "Database error!";
+        }
+
+    }
+
+    public async Task<string> LogoutAsync(string email)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<int> SaveChangesAsync()
     {
         try
@@ -193,4 +266,5 @@ public class UserRepository : IUserRepository
         }
     }
 
+    
 }
