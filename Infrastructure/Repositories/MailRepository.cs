@@ -7,6 +7,7 @@ using Domain.Models;
 using Domain.Repositories;
 using Infrastructure.Settings;
 using Microsoft.Extensions.Options;
+using System.Net.Sockets;
 
 namespace Infrastructure.Repositories;
 
@@ -20,7 +21,7 @@ public class MailRepository : IMailRepository
         _mailSettings = mailSettings.Value;
     }
 
-    public async Task SendEmailAsync(MailRequest mailRequest)
+    public async Task SendMailAsync(MailRequest mailRequest)
     {
 
         try
@@ -43,9 +44,17 @@ public class MailRepository : IMailRepository
             smtp.Dispose();
 
         }
-        catch (Exception e)
+        catch (SocketException ex)
         {
-            throw new Exception(e.Message + "\n" + e.StackTrace);
+            throw new SocketException(ex.ErrorCode);
+        }
+        catch (SmtpCommandException ex)
+        {
+            throw new SmtpCommandException(ex.ErrorCode, ex.StatusCode, ex.Message);
+        }
+        catch (SmtpProtocolException ex)
+        {
+            throw new SmtpProtocolException(ex.Message, ex);
         }
 
     }

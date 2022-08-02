@@ -81,6 +81,55 @@ public class UserController : ControllerBase
 
     }
 
+    [HttpPost("ForgotPassword")]
+    public async Task<IActionResult> ForgotPassword(string email)
+    {
+        var result = await _userRepository.SendMailForgotPassword(email);
+
+        if (Convert.ToString(result) == "No empty allow!")
+            return BadRequest("Error: There are empty values, No empty values allow!");
+
+        else if (Convert.ToString(result) == "No exists!")
+            return BadRequest("Error: Email does not exist!");
+
+        else if (Convert.ToString(result) == "Socket error!")
+            return BadRequest("Error: There is a issue with the Socket!");
+
+        else if (Convert.ToString(result) == "Smtp command error!")
+            return BadRequest("Error: There is a issue with the Smtp commands!");
+
+        else if (Convert.ToString(result) == "Smtp protocol error!")
+            return BadRequest("Error: There is a issue while connecting with Smtp server!");
+
+        else if (Convert.ToString(result) == "Database error!")
+            return BadRequest("Error: Request to database failed!");
+
+        return Ok(result);
+
+    }
+
+    [HttpPost("RestorePassword")]
+    public async Task<IActionResult> RestirePassword(UserDTO userDTO)
+    {
+
+        var result = await _userRepository.RestorePassword(userDTO.Email, userDTO.Password);
+
+        if (Convert.ToString(result) == "No empty allow!")
+            return BadRequest("Error: There are empty values, No empty values allow!");
+
+        else if (Convert.ToString(result) == "No exists!")
+            return BadRequest("Error: Email does not exist!");
+
+        else if (Convert.ToString(result) == "No action!")
+            return BadRequest("Error: User not updated!");
+
+        else if (Convert.ToString(result) == "Database error!")
+            return BadRequest("Error: Request to database failed!");
+
+        return Ok(result);
+
+    }
+
     [HttpPost("Logout")]
     public async Task<IActionResult> Logout()
     {

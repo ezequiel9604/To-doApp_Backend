@@ -1,6 +1,5 @@
 ﻿
 using Domain.DTOs;
-using Domain.Entities;
 
 namespace Domain.Repositories;
 
@@ -14,6 +13,10 @@ public interface IUserRepository : IStrongDomainRepository<UserDTO>
     Task<bool> CheckUserExists(string email);
 
     Task<object> LoginAsync(string email, string password);
+
+    Task<string> SendMailForgotPassword(string email);
+
+    Task<string> RestorePassword(string email, string password);
 
 }
     

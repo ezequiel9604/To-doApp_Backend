@@ -1,13 +1,14 @@
 
 using AutoMapper;
+using System.Text;
 using Domain.Repositories;
-using Infrastructure.Persistence;
 using Infrastructure.Mapper;
+using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
