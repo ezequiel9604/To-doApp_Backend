@@ -9,10 +9,10 @@ public class TodoAppDbContextSeed
     {
         return new List<Category>()
         {
-            new Category() { Name = "Family" },
-            new Category() { Name = "Health" },
-            new Category() { Name = "Home" },
-            new Category() { Name = "Work" }
+            new Category() { Id= 1, Name = "Family" },
+            new Category() { Id= 2, Name = "Health" },
+            new Category() { Id= 3, Name = "Home" },
+            new Category() { Id= 4, Name = "Work" }
         };
     }
 
@@ -20,9 +20,9 @@ public class TodoAppDbContextSeed
     {
         return new List<Frequency>()
         {
-            new Frequency() { Name = "Daily" },
-            new Frequency() { Name = "Weekly" },
-            new Frequency() { Name = "Monthly" }
+            new Frequency() { Id= 1, Name = "Daily" },
+            new Frequency() { Id= 2, Name = "Weekly" },
+            new Frequency() { Id= 3, Name = "Monthly" }
         };
     }
 

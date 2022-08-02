@@ -25,7 +25,21 @@ public class UTaskRepository : IUTaskRepository
         {
             var tasks = await _dbContext.Tasks.ToListAsync();
 
-            var taskDtos = _mapper.Map<List<UTaskDTO>>(tasks);
+            var taskDtos = new List<UTaskDTO>();
+            foreach (var item in tasks)
+            { 
+                var tdto = _mapper.Map<UTaskDTO>(item);
+
+                var frequency = await _dbContext.Frequencies
+                .Where(x => x.Id == item.FrequencyId).FirstOrDefaultAsync();
+                var category = await _dbContext.Categories
+                    .Where(x => x.Id == item.CategoryId).FirstOrDefaultAsync();
+
+                tdto.Category = category.Name;
+                tdto.Frequency = frequency.Name;
+
+                taskDtos.Add(tdto);
+            }
 
             return taskDtos;
         }
@@ -41,7 +55,13 @@ public class UTaskRepository : IUTaskRepository
         {
             var task = await _dbContext.Tasks.Where(x => x.Id == id).FirstOrDefaultAsync();
 
+            if (task == null)
+                return new UTaskDTO();
+
             var taskDto = _mapper.Map<UTaskDTO>(task);
+
+            taskDto.Category = task.Category.Name;
+            taskDto.Frequency = task.Frequency.Name;
 
             return taskDto;
         }

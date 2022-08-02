@@ -40,6 +40,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // setting up repository scope
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUTaskRepository, UTaskRepository>();
+builder.Services.AddScoped<IMailRepository, MailRepository>();
 
 
 // setting up cors
