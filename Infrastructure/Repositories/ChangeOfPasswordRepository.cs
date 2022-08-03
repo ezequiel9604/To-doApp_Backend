@@ -26,6 +26,9 @@ public class ChangeOfPasswordRepository : IChangeOfPasswordRepository
         {
             var changes = await _dbContext.ChangeOfPasswords.ToListAsync();
 
+            if (changes.Any())
+                return new List<ChangeOfPasswordDTO>();
+
             var changeDtos = _mapper.Map<List<ChangeOfPasswordDTO>>(changes);
 
             return changeDtos;
@@ -42,6 +45,9 @@ public class ChangeOfPasswordRepository : IChangeOfPasswordRepository
         {
             var change = await _dbContext.ChangeOfPasswords.Where(x => x.Id == id).FirstOrDefaultAsync();
 
+            if (change == null)
+                return new ChangeOfPasswordDTO();
+
             var changeDto = _mapper.Map<ChangeOfPasswordDTO>(change);
 
             return changeDto;
@@ -49,6 +55,28 @@ public class ChangeOfPasswordRepository : IChangeOfPasswordRepository
         catch (Exception)
         {
             return new ChangeOfPasswordDTO();
+        }
+    }
+
+    public async Task<List<ChangeOfPasswordDTO>> GetByUserId(int id)
+    {
+        try
+        {
+
+            var changes = await _dbContext.ChangeOfPasswords
+                .Where(x => x.UserId == id).ToListAsync();
+
+            if (!changes.Any())
+                return new List<ChangeOfPasswordDTO>();
+
+            var changesDtos = _mapper.Map<List<ChangeOfPasswordDTO>>(changes);
+
+            return changesDtos;
+
+        }
+        catch (Exception)
+        {
+            return new List<ChangeOfPasswordDTO>();
         }
     }
 

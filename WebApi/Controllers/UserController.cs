@@ -17,6 +17,14 @@ public class UserController : ControllerBase
         _userRepository = userRepository;
     }
 
+    [HttpGet("GetAll")]
+    public async Task<ActionResult<List<UserDTO>>> GetAll()
+    {
+        var tasks = await _userRepository.GetAllAsync();
+
+        return tasks;
+    }
+
     [HttpPost("Login")]
     public async Task<IActionResult> Login(UserDTO userDTO)
     {

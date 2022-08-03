@@ -31,7 +31,7 @@ public class UTaskRepository : IUTaskRepository
                 var tdto = _mapper.Map<UTaskDTO>(item);
 
                 var frequency = await _dbContext.Frequencies
-                .Where(x => x.Id == item.FrequencyId).FirstOrDefaultAsync();
+                    .Where(x => x.Id == item.FrequencyId).FirstOrDefaultAsync();
                 var category = await _dbContext.Categories
                     .Where(x => x.Id == item.CategoryId).FirstOrDefaultAsync();
 
@@ -53,21 +53,62 @@ public class UTaskRepository : IUTaskRepository
     {
         try
         {
-            var task = await _dbContext.Tasks.Where(x => x.Id == id).FirstOrDefaultAsync();
+            var task = await _dbContext.Tasks
+                .Where(x => x.Id == id).FirstOrDefaultAsync();
 
             if (task == null)
                 return new UTaskDTO();
 
             var taskDto = _mapper.Map<UTaskDTO>(task);
 
-            taskDto.Category = task.Category.Name;
-            taskDto.Frequency = task.Frequency.Name;
+            var frequency = await _dbContext.Frequencies
+                .Where(x => x.Id == task.FrequencyId).FirstOrDefaultAsync();
+            var category = await _dbContext.Categories
+                .Where(x => x.Id == task.CategoryId).FirstOrDefaultAsync();
+
+            taskDto.Category = frequency.Name;
+            taskDto.Frequency = category.Name;
 
             return taskDto;
         }
         catch (Exception)
         {
             return new UTaskDTO();
+        }
+    }
+
+    public async Task<List<UTaskDTO>> GetByUserId(int id)
+    {
+        try
+        {
+            var tasks = await _dbContext.Tasks
+                .Where(x => x.UserId == id).ToListAsync();
+
+            if (tasks == null)
+                return new List<UTaskDTO>();
+
+            var taskDto = new List<UTaskDTO>();
+            foreach (var item in tasks)
+            {
+                var tskdto = _mapper.Map<UTaskDTO>(item);
+
+                var frequency = await _dbContext.Frequencies
+                    .Where(x => x.Id == item.FrequencyId).FirstOrDefaultAsync();
+                var category = await _dbContext.Categories
+                    .Where(x => x.Id == item.CategoryId).FirstOrDefaultAsync();
+
+                tskdto.Category = frequency.Name;
+                tskdto.Frequency = category.Name;
+
+                taskDto.Add(tskdto);
+
+            }
+
+            return taskDto;
+        }
+        catch (Exception)
+        {
+            return new List<UTaskDTO>();
         }
     }
 
@@ -226,4 +267,5 @@ public class UTaskRepository : IUTaskRepository
         }
     }
 
+    
 }

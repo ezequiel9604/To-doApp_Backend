@@ -41,6 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUTaskRepository, UTaskRepository>();
 builder.Services.AddScoped<IMailRepository, MailRepository>();
+builder.Services.AddScoped<IChangeOfPasswordRepository, ChangeOfPasswordRepository>();
 
 
 // setting up cors

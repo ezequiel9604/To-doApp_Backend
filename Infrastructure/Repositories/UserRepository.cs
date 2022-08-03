@@ -18,15 +18,21 @@ public class UserRepository : IUserRepository
     private readonly IMapper _mapper;
     private readonly IConfiguration _config;
     private readonly TodoAppDbContext _dbContext;
+    private readonly IUTaskRepository _uTaskRepository;
+    private readonly IChangeOfPasswordRepository _changeOfPasswordRepository;
     private readonly IMailRepository _mailRepository;
 
     public UserRepository(IMapper mapper, IConfiguration config, 
-        TodoAppDbContext dbContext, IMailRepository mailRepository)
+        TodoAppDbContext dbContext, IMailRepository mailRepository, 
+        IChangeOfPasswordRepository changeOfPasswordRepository,
+        IUTaskRepository uTaskRepository)
     {
         _mapper = mapper;
         _config = config;
         _dbContext = dbContext;
         _mailRepository = mailRepository;
+        _uTaskRepository = uTaskRepository;
+        _changeOfPasswordRepository = changeOfPasswordRepository;
     }
 
     public async Task<List<UserDTO>> GetAllAsync()
@@ -35,9 +41,23 @@ public class UserRepository : IUserRepository
         {
             var users = await _dbContext.Users.ToListAsync();
 
-            var userDtos = _mapper.Map<List<UserDTO>>(users);
+            var userDtos = new List<UserDTO>();
+
+            foreach (var item in users)
+            {
+                var udto = _mapper.Map<UserDTO>(item);
+
+                var tsks = await _uTaskRepository.GetByUserId(udto.Id);
+                var chgs = await _changeOfPasswordRepository.GetByUserId(udto.Id);
+
+                udto.UTasks = tsks;
+                udto.ChangeOfPasswords = chgs;
+
+                userDtos.Add(udto);
+            }
 
             return userDtos;
+
         }
         catch (Exception)
         {
@@ -87,7 +107,22 @@ public class UserRepository : IUserRepository
             int affectedRows = await SaveChangesAsync();
 
             if (affectedRows > 0)
+            {
+                var userr = await _dbContext.Users
+                    .Where(x => x.Email == userDto.Email).FirstOrDefaultAsync();
+
+                var changes = new ChangeOfPassword()
+                {
+                    ChangedDate = DateTime.Now,
+                    UserId = userr.Id
+                };
+
+                await _dbContext.ChangeOfPasswords.AddAsync(changes);
+
+                await _dbContext.SaveChangesAsync();
+
                 return "Success!";
+            }
 
             return "No action!";
 
@@ -214,7 +249,22 @@ public class UserRepository : IUserRepository
             int affectedRows = await SaveChangesAsync();
 
             if (affectedRows > 0)
+            {
+                var userr = await _dbContext.Users
+                    .Where(x => x.Email == userDto.Email).FirstOrDefaultAsync();
+
+                var changes = new ChangeOfPassword()
+                {
+                    ChangedDate = DateTime.Now,
+                    UserId = userr.Id
+                };
+
+                await _dbContext.ChangeOfPasswords.AddAsync(changes);
+
+                await _dbContext.SaveChangesAsync();
+
                 return "Success!";
+            }
 
             return "No action!";
 
@@ -321,7 +371,6 @@ public class UserRepository : IUserRepository
 
         if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             return "No empty allow!";
-
 
         try
         {
