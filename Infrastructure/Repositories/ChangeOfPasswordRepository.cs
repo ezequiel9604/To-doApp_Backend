@@ -83,7 +83,24 @@ public class ChangeOfPasswordRepository : IChangeOfPasswordRepository
     public async Task<string> CreateAsync(ChangeOfPasswordDTO changeDto)
     {
 
-        throw new NotImplementedException();
+        try
+        {
+            var change = _mapper.Map<ChangeOfPassword>(changeDto);
+
+            await _dbContext.AddAsync(change);
+
+            int affectedRows = await SaveChangesAsync();
+
+            if (affectedRows > 0)
+                return "Success!";
+
+            return "No action!";
+        }
+        catch (Exception)
+        {
+            return "Database error!";
+        }
+
     }
 
     public async Task<string> DeleteAsync(ChangeOfPasswordDTO change)

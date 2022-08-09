@@ -73,6 +73,12 @@ public class UserRepository : IUserRepository
 
             var userDto = _mapper.Map<UserDTO>(user);
 
+            var tsks = await _uTaskRepository.GetByUserId(user.Id);
+            var chgs = await _changeOfPasswordRepository.GetByUserId(user.Id);
+
+            userDto.UTasks = tsks;
+            userDto.ChangeOfPasswords = chgs;
+
             return userDto;
         }
         catch (Exception)
@@ -187,6 +193,14 @@ public class UserRepository : IUserRepository
                 Password.CreatePassword(userDto.Password, out byte[] hash, out byte[] salt);
                 user.PasswordSalt = salt;
                 user.PasswordHash = hash;
+
+                var changeDto = new ChangeOfPasswordDTO()
+                {
+                    ChangedDate = DateTime.Now,
+                    UserId = user.Id
+                };
+
+                await _changeOfPasswordRepository.CreateAsync(changeDto);
             }
 
             _dbContext.Users.Update(user);
@@ -283,7 +297,8 @@ public class UserRepository : IUserRepository
 
         try
         {
-            var user = await _dbContext.Users.Where(x => x.Email == email).FirstOrDefaultAsync();
+            var user = await _dbContext.Users
+                .Where(x => x.Email == email).FirstOrDefaultAsync();
 
             if (user == null)
                 return "No exists!";
@@ -294,6 +309,14 @@ public class UserRepository : IUserRepository
             var token = Tokens.CreateToken(user, _config);
 
             var userDto = _mapper.Map<UserDTO>(user);
+
+            /*
+            var tsks = await _uTaskRepository.GetByUserId(user.Id);
+            var chgs = await _changeOfPasswordRepository.GetByUserId(user.Id);
+
+            userDto.UTasks = tsks;
+            userDto.ChangeOfPasswords = chgs;
+            */
 
             return new { Token = token, User = userDto };
 
@@ -339,7 +362,7 @@ public class UserRepository : IUserRepository
                 ToEmail = email,
                 Subject = "Restoring password",
                 Body = "Click on the link below to start the process of restoring your password. " +
-                "https://localhost:3000/restorePassword/User="+email
+                "https://localhost:7181/restorepassword/User="+email
             };
 
             await _mailRepository.SendMailAsync(mailRequest);

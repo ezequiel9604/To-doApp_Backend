@@ -1,6 +1,7 @@
 ﻿
 using Domain.DTOs;
 using Domain.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
@@ -17,6 +18,7 @@ public class TaskController : ControllerBase
         _taskRepository = taskRepository;
     }
 
+    [AllowAnonymous]
     [HttpGet("GetAll")]
     public async Task<ActionResult<List<UTaskDTO>>> GetAll()
     {
@@ -25,6 +27,16 @@ public class TaskController : ControllerBase
         return tasks;
     }
 
+    [AllowAnonymous]
+    [HttpGet("GetByUserId/{id}")]
+    public async Task<ActionResult<List<UTaskDTO>>> GetByUserId(int id)
+    {
+        var tasks = await _taskRepository.GetByUserId(id);
+
+        return tasks;
+    }
+
+    [AllowAnonymous]
     [HttpPost("Add")]
     public async Task<IActionResult> Add(UTaskDTO uTaskDTO)
     {   
@@ -44,6 +56,7 @@ public class TaskController : ControllerBase
 
     }
 
+    [AllowAnonymous]
     [HttpPut("Edit")]
     public async Task<IActionResult> Edit(UTaskDTO uTaskDTO)
     {
@@ -63,7 +76,8 @@ public class TaskController : ControllerBase
 
     }
 
-    [HttpPut("Delete")]
+    [AllowAnonymous]
+    [HttpPost("Delete")]
     public async Task<IActionResult> Delete(UTaskDTO uTaskDTO)
     {
 

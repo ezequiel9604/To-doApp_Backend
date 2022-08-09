@@ -1,6 +1,7 @@
 ﻿
 using Domain.DTOs;
 using Domain.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
@@ -17,6 +18,7 @@ public class UserController : ControllerBase
         _userRepository = userRepository;
     }
 
+    [AllowAnonymous]
     [HttpGet("GetAll")]
     public async Task<ActionResult<List<UserDTO>>> GetAll()
     {
@@ -25,6 +27,7 @@ public class UserController : ControllerBase
         return tasks;
     }
 
+    [AllowAnonymous]
     [HttpPost("Login")]
     public async Task<IActionResult> Login(UserDTO userDTO)
     {
@@ -48,6 +51,7 @@ public class UserController : ControllerBase
 
     }
 
+    [AllowAnonymous]
     [HttpPost("Register")]
     public async Task<IActionResult> Register(UserDTO userDTO)
     {
@@ -70,6 +74,7 @@ public class UserController : ControllerBase
 
     }
 
+    [AllowAnonymous]
     [HttpPut("Edit")]
     public async Task<IActionResult> Edit(UserDTO userDTO)
     {
@@ -89,6 +94,7 @@ public class UserController : ControllerBase
 
     }
 
+    [AllowAnonymous]
     [HttpPost("ForgotPassword")]
     public async Task<IActionResult> ForgotPassword(string email)
     {
@@ -116,8 +122,9 @@ public class UserController : ControllerBase
 
     }
 
+    [AllowAnonymous]
     [HttpPost("RestorePassword")]
-    public async Task<IActionResult> RestirePassword(UserDTO userDTO)
+    public async Task<IActionResult> RestorePassword(UserDTO userDTO)
     {
 
         var result = await _userRepository.RestorePassword(userDTO.Email, userDTO.Password);

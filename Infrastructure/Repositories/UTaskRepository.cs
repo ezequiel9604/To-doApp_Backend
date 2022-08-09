@@ -97,8 +97,8 @@ public class UTaskRepository : IUTaskRepository
                 var category = await _dbContext.Categories
                     .Where(x => x.Id == item.CategoryId).FirstOrDefaultAsync();
 
-                tskdto.Category = frequency.Name;
-                tskdto.Frequency = category.Name;
+                tskdto.Category = category.Name;
+                tskdto.Frequency = frequency.Name;
 
                 taskDto.Add(tskdto);
 
