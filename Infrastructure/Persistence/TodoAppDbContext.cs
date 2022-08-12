@@ -33,6 +33,8 @@ public class TodoAppDbContext : DbContext
     public DbSet<Category>? Categories { get; set; }
 
     public DbSet<Frequency>? Frequencies { get; set; }
+
+    public DbSet<PassRecovery>? PassRecoveries { get; set; }
     
     public DbSet<ChangeOfPassword>? ChangeOfPasswords { get; set; }
 

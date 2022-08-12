@@ -38,6 +38,9 @@ public class AutoMapperProfileConfiguration : Profile
                 opt => opt.MapFrom(src => new DateTime(src.Year, src.Month, src.Day, src.Hour, src.Minute, 0)));
 
         // createMap<destination, source>
+        CreateMap<PassRecoveryDTO, PassRecovery>().ReverseMap();
+
+        // createMap<destination, source>
         CreateMap<ChangeOfPasswordDTO, ChangeOfPassword>().ReverseMap();
 
     }

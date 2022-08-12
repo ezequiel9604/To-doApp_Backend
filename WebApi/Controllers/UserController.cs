@@ -1,5 +1,6 @@
 ﻿
 using Domain.DTOs;
+using Domain.Models;
 using Domain.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,8 +59,8 @@ public class UserController : ControllerBase
 
         var result = await _userRepository.SignupAsync(userDTO);
 
-        if (Convert.ToString(result) == "No empty allow!")
-            return BadRequest("Error: There are empty values, No empty values allow!");
+        if (Convert.ToString(result) == "No empty values allow!")
+            return BadRequest("Error: No empty values allow!");
 
         else if (Convert.ToString(result) == "Already exists!")
             return BadRequest("Error: Email exists already!");
@@ -74,7 +75,7 @@ public class UserController : ControllerBase
 
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "User")]
     [HttpPut("Edit")]
     public async Task<IActionResult> Edit(UserDTO userDTO)
     {
@@ -82,6 +83,9 @@ public class UserController : ControllerBase
         var result = await _userRepository.UpdateAsync(userDTO);
 
         if (Convert.ToString(result) == "No exists!")
+            return BadRequest("Error: User does not exist!");
+
+        if (Convert.ToString(result) == "Already exists!")
             return BadRequest("Error: Email does not exist!");
 
         else if (Convert.ToString(result) == "No action!")
@@ -96,24 +100,24 @@ public class UserController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("ForgotPassword")]
-    public async Task<IActionResult> ForgotPassword(string email)
+    public async Task<IActionResult> ForgotPassword(UserDTO userDTO)
     {
-        var result = await _userRepository.SendMailForgotPassword(email);
+        var result = await _userRepository.SendMailForgotPassword(userDTO.Email);
 
         if (Convert.ToString(result) == "No empty allow!")
-            return BadRequest("Error: There are empty values, No empty values allow!");
+            return BadRequest("Error: No empty values allow!");
 
-        else if (Convert.ToString(result) == "No exists!")
+        else if (Convert.ToString(result) == "No Exists!")
             return BadRequest("Error: Email does not exist!");
 
         else if (Convert.ToString(result) == "Socket error!")
-            return BadRequest("Error: There is a issue with the Socket!");
+            return BadRequest("Error: An issue with the Socket!");
 
         else if (Convert.ToString(result) == "Smtp command error!")
-            return BadRequest("Error: There is a issue with the Smtp commands!");
+            return BadRequest("Error: An issue with the Smtp commands!");
 
         else if (Convert.ToString(result) == "Smtp protocol error!")
-            return BadRequest("Error: There is a issue while connecting with Smtp server!");
+            return BadRequest("Error: An issue connecting with Smtp server!");
 
         else if (Convert.ToString(result) == "Database error!")
             return BadRequest("Error: Request to database failed!");
@@ -124,16 +128,22 @@ public class UserController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("RestorePassword")]
-    public async Task<IActionResult> RestorePassword(UserDTO userDTO)
+    public async Task<IActionResult> RestorePassword(PassRestoreRequest req)
     {
 
-        var result = await _userRepository.RestorePassword(userDTO.Email, userDTO.Password);
+        var result = await _userRepository.RestorePassword(req.Email, req.Password, req.Code);
 
         if (Convert.ToString(result) == "No empty allow!")
-            return BadRequest("Error: There are empty values, No empty values allow!");
+            return BadRequest("Error: No empty values allow!");
 
         else if (Convert.ToString(result) == "No exists!")
             return BadRequest("Error: Email does not exist!");
+
+        else if (Convert.ToString(result) == "Wrong code!")
+            return BadRequest("Error: Recovery code is wrong!");
+
+        else if (Convert.ToString(result) == "Code not match!!")
+            return BadRequest("Error: Code do not match with user!");
 
         else if (Convert.ToString(result) == "No action!")
             return BadRequest("Error: User not updated!");

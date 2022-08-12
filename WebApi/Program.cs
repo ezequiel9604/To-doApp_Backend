@@ -8,6 +8,7 @@ using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Infrastructure.Settings;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,10 +21,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
+builder.Services.Configure<MailSettings>(
+    builder.Configuration.GetSection("MailSettings"));
+
 // setting up dbms
 builder.Services.AddDbContext<TodoAppDbContext>(opts => opts.UseSqlServer(
     builder.Configuration.GetConnectionString("mainConnection")));
-
 
 // setting up authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -41,6 +44,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUTaskRepository, UTaskRepository>();
 builder.Services.AddScoped<IMailRepository, MailRepository>();
+builder.Services.AddScoped<IPassRecoveryRepository, PassRecoveryRepository>();
 builder.Services.AddScoped<IChangeOfPasswordRepository, ChangeOfPasswordRepository>();
 
 

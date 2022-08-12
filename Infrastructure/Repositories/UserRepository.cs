@@ -8,8 +8,6 @@ using Infrastructure.Helpers;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Net.Sockets;
-using MailKit.Net.Smtp;
 
 namespace Infrastructure.Repositories;
 
@@ -21,10 +19,12 @@ public class UserRepository : IUserRepository
     private readonly IUTaskRepository _uTaskRepository;
     private readonly IChangeOfPasswordRepository _changeOfPasswordRepository;
     private readonly IMailRepository _mailRepository;
+    private readonly IPassRecoveryRepository _passRecoveryRepository;
 
     public UserRepository(IMapper mapper, IConfiguration config, 
         TodoAppDbContext dbContext, IMailRepository mailRepository, 
         IChangeOfPasswordRepository changeOfPasswordRepository,
+        IPassRecoveryRepository passRecoveryRepository,
         IUTaskRepository uTaskRepository)
     {
         _mapper = mapper;
@@ -32,6 +32,7 @@ public class UserRepository : IUserRepository
         _dbContext = dbContext;
         _mailRepository = mailRepository;
         _uTaskRepository = uTaskRepository;
+        _passRecoveryRepository = passRecoveryRepository;
         _changeOfPasswordRepository = changeOfPasswordRepository;
     }
 
@@ -149,7 +150,8 @@ public class UserRepository : IUserRepository
 
         try
         {
-            var user = await _dbContext.Users.Where(x => x.Email == userDto.Email).FirstOrDefaultAsync();
+            var user = await _dbContext.Users
+                .Where(x => x.Email == userDto.Email).FirstOrDefaultAsync();
 
             if (user == null)
                 return "No Exists";
@@ -179,7 +181,7 @@ public class UserRepository : IUserRepository
         {
             var user = await _dbContext.Users.Where(x => x.Id == userDto.Id).FirstOrDefaultAsync();
 
-            if (user == null)
+            if (user is null)
                 return "No Exists!";
 
             if (!string.IsNullOrEmpty(userDto.Name))
@@ -357,42 +359,46 @@ public class UserRepository : IUserRepository
             if(!await CheckUserExists(email))
                 return "No Exists!";
 
+            var user = await _dbContext.Users
+                .Where(x => x.Email == email).FirstOrDefaultAsync();
+
+
+            var recoveryDto = new PassRecoveryDTO()
+            {
+                Code = RandomCode.Generate(10),
+                Date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day),
+                Used = false,
+                UserId = user.Id
+            };
+
+            await _passRecoveryRepository.CreateAsync(recoveryDto);
+
+
             var mailRequest = new MailRequest()
             {
                 ToEmail = email,
                 Subject = "Restoring password",
-                Body = "Click on the link below to start the process of restoring your password. " +
-                "https://localhost:7181/restorepassword/User="+email
+                Body = "Open the link below to start the process of restoring your password. " +
+                "http://localhost:3000/restorepassword?User=" + email + "&Code=" + recoveryDto.Code,
             };
 
             await _mailRepository.SendMailAsync(mailRequest);
 
-            return "Success!";
+            return "Check your email and go to the link!";
 
         }
-        catch (SocketException)
+        catch (Exception e)
         {
-            return "Socket error!";
-        }
-        catch (SmtpCommandException)
-        {
-            return "Smtp command error!";
-        }
-        catch (SmtpProtocolException)
-        {
-            return "Smtp protocol error!";
-        }
-        catch (Exception)
-        {
+            System.Console.WriteLine(e);
             return "Database error!";
         }
 
     }
 
-    public async Task<string> RestorePassword(string email, string password)
+    public async Task<string> RestorePassword(string email, string password, string code)
     {
 
-        if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(code))
             return "No empty allow!";
 
         try
@@ -401,8 +407,27 @@ public class UserRepository : IUserRepository
             var user = await _dbContext.Users
                 .Where(x => x.Email == email).FirstOrDefaultAsync();
 
-            if (user == null)
+            if (user is null)
                 return "No Exists!";
+
+
+            var recovery = await _dbContext.PassRecoveries
+                .Where(x => x.Code == code).FirstOrDefaultAsync();
+
+            if(recovery is null)
+                return "Wrong code!";
+
+            if(recovery.UserId != user.Id)
+                return "Code not match!";
+
+            if(recovery.Date.Value.Year != DateTime.Now.Year || 
+                recovery.Date.Value.Month != DateTime.Now.Month
+                || recovery.Date.Value.Day != DateTime.Now.Day)
+            {
+                return "Code expired!";
+            }
+
+            await _passRecoveryRepository.UpdateAsync(_mapper.Map<PassRecoveryDTO>(recovery));
 
             Password.CreatePassword(password, out byte[] hash, out byte[] salt);
             user.PasswordSalt = salt;

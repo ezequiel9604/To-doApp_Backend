@@ -1,13 +1,13 @@
 ﻿
 using MimeKit;
-using MailKit;
-using MailKit.Net.Smtp;
 using MailKit.Security;
+using MailKit.Net.Smtp;
 using Domain.Models;
 using Domain.Repositories;
 using Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using System.Net.Sockets;
+
 
 namespace Infrastructure.Repositories;
 
@@ -44,17 +44,10 @@ public class MailRepository : IMailRepository
             smtp.Dispose();
 
         }
-        catch (SocketException ex)
+        catch (Exception e)
         {
-            throw new SocketException(ex.ErrorCode);
-        }
-        catch (SmtpCommandException ex)
-        {
-            throw new SmtpCommandException(ex.ErrorCode, ex.StatusCode, ex.Message);
-        }
-        catch (SmtpProtocolException ex)
-        {
-            throw new SmtpProtocolException(ex.Message, ex);
+            //System.Console.WriteLine(e);
+            throw new Exception(e.Message, e);
         }
 
     }

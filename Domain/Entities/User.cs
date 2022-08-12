@@ -27,5 +27,7 @@ public class User
 
     public List<ChangeOfPassword>? ChangeOfPasswords { get; set; }
 
+    public List<PassRecovery>? PassRecoveries { get; set; }
+
 }
 

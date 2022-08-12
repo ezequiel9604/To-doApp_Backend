@@ -16,7 +16,7 @@ public interface IUserRepository : IStrongDomainRepository<UserDTO>
 
     Task<string> SendMailForgotPassword(string email);
 
-    Task<string> RestorePassword(string email, string password);
+    Task<string> RestorePassword(string email, string password, string code);
 
 }
     

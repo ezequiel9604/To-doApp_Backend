@@ -27,7 +27,7 @@ public class TaskController : ControllerBase
         return tasks;
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "User")]
     [HttpGet("GetByUserId/{id}")]
     public async Task<ActionResult<List<UTaskDTO>>> GetByUserId(int id)
     {
@@ -36,15 +36,15 @@ public class TaskController : ControllerBase
         return tasks;
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "User")]
     [HttpPost("Add")]
     public async Task<IActionResult> Add(UTaskDTO uTaskDTO)
     {   
         
         var result = await _taskRepository.CreateAsync(uTaskDTO);
 
-        if (Convert.ToString(result) == "No empty allow!")
-            return BadRequest("Error: There are empty values, No empty values allow!");
+        if (Convert.ToString(result) == "No empty values allow!")
+            return BadRequest("Error: No empty values allow!");
 
         else if (Convert.ToString(result) == "No action!")
             return BadRequest("Error: task not added!");
@@ -56,7 +56,7 @@ public class TaskController : ControllerBase
 
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "User")]
     [HttpPut("Edit")]
     public async Task<IActionResult> Edit(UTaskDTO uTaskDTO)
     {
@@ -76,7 +76,7 @@ public class TaskController : ControllerBase
 
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "User")]
     [HttpPost("Delete")]
     public async Task<IActionResult> Delete(UTaskDTO uTaskDTO)
     {
